@@ -2,9 +2,21 @@ plugin.loadLang();
 
 if(plugin.canChangeMenu())
 {
-	theWebUI.getWebSeedSource = function( id )
+	theWebUI.getWebSeedSource = function()
 	{
-		$("#webseedsrchash").val(id);
+		var sr = this.getTable("trt").rowSel;
+		var hash = '';
+		for( var k in sr )
+		{
+			if( sr[k] && (k.length == 40) )
+			{
+				if( hash )
+					hash += " " + k;
+				else
+					hash = k;
+			}
+		}
+		$("#webseedsrchash").val(hash);
 		$("#getWebSeedSource").submit();
 	}
 
@@ -16,7 +28,7 @@ if(plugin.canChangeMenu())
 		{
 			var el = theContextMenu.get( theUILang.Properties );
 			if( el )
-				theContextMenu.add( el, [theUILang.getWebSeedSource,  (this.getTable("trt").selCount > 1) || (id.length>40) ? null : "theWebUI.getWebSeedSource('" + id + "')"] );
+				theContextMenu.add( el, [theUILang.getWebSeedSource,  "theWebUI.getWebSeedSource()"] );
 		}
 	}
 }
