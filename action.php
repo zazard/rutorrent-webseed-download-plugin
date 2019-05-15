@@ -10,7 +10,7 @@ eval( getPluginConf( 'webseedsource' ) );
 class WeebSeedTorrent extends Torrent {
 	protected $pointer = 0;
 
-	public function __construct($torrent, $dlpath, $webseedurl) 
+	public function __construct($torrent, $dlpath, $webseedurl, $filename) 
 	{
 		$torrentdata = get_object_vars($torrent);
 		foreach ($torrentdata as $key => $value){
@@ -24,6 +24,9 @@ class WeebSeedTorrent extends Torrent {
 		$this->{"announce-list"} = [];
 		$this->{"announce"} = null;
 		$this->{"private"} = 1;
+		if (is_null($this->name)) {
+			$this->name = str_replace(".torrent", "", $filename);
+		}
 		return;
 	}
 
@@ -53,7 +56,7 @@ function make_webseed($webseedbase, $webseedurl, $hash) {
 		$basepath = str_replace($webseedbase, "", $basepath);
 		$basepath = trim(str_replace($filename, "", $basepath), "/");
 
-		$newtorrent = new WeebSeedTorrent($torrent, $basepath, $webseedurl);
+		$newtorrent = new WeebSeedTorrent($torrent, $basepath, $webseedurl, $filename);
 
 		toLog("Generating webseed torrent for ".$hash." with url_list:" . implode(",", $newtorrent->{"url-list"}));
 
@@ -92,7 +95,8 @@ function serve_file($webseedurl, $webseedbase){
 				$tmppath = getTempFilename($hash);
 				$remove[] = $tmppath;
 				$torrent->save($tmppath);
-				if (!$zip->addFile($tmppath, $hash. "_webseed.torrent")) {
+				$fname = $torrent->getName($hash)."_webseed.torrent";
+				if (!$zip->addFile($tmppath, $torrent->getName($hash). "_webseed.torrent")) {
 					toLog("error adding ".$tmppath." to zip");
 				}
 			}
